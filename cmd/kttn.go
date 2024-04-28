@@ -105,7 +105,6 @@ func main() {
       s.Clear()
       updateLogo(s, defStyle)
       updateTypingBox(s, defStyle, typeTest)
-      updateCursor(s, typeTest)
 			s.Sync()
 		case *tcell.EventKey:
 			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
@@ -113,13 +112,11 @@ func main() {
 			} else if ev.Key() == tcell.KeyBackspace || ev.Key() == tcell.KeyBackspace2 {
         typeTest.UpdateWithBackspace(ev.Key())
         updateTypingBox(s, defStyle, typeTest)
-        updateCursor(s, typeTest)
 			} else {
         //TODO once text len == cursor show results
         typeTest.UpdateWithRegKey(ev.Rune())
         updateLogo(s, defStyle)
         updateTypingBox(s, defStyle, typeTest)
-        updateCursor(s, typeTest)
       }
 		}
 	}
@@ -147,17 +144,6 @@ func getTypingBoxCoords(screen tcell.Screen, text string) (startX, startY, endX,
     offset = int(numOfRows) - 6
   }
   return 5, midY - int(math.Round(numOfRows/2 + 0.5)) + offset, maxX - 5, midY + int(math.Round(numOfRows/2 + 0.5)) + offset
-}
-
-func updateCursor(screen tcell.Screen, typeTest TypingTest) {
-  sx, sy, ex, _ := getTypingBoxCoords(screen, typeTest.Text)
-  lineLen := ex - sx - 1 
-  yOffset := typeTest.CurPos/lineLen + 1
-  xOffset := 0 
-  if typeTest.CurPos >= lineLen {
-    xOffset = lineLen * (typeTest.CurPos/lineLen) 
-  }
-  screen.ShowCursor(sx + 1 + typeTest.CurPos - xOffset, sy + yOffset)
 }
 
 func updateLogo(screen tcell.Screen, style tcell.Style) {
@@ -192,7 +178,8 @@ func getLogoWithParams(eyes, tail string) string {
 func drawBoundedText(s tcell.Screen, x1, y1, x2, y2 int, style tcell.Style, typeTest TypingTest) {
 	row := y1
 	col := x1
-	for i, r := range []rune(typeTest.Text) {
+  textAsRunes := []rune(typeTest.Text)
+	for i, r := range textAsRunes {
     if i >= typeTest.CurPos {
       s.SetContent(col, row, r, nil, style)
     }else if typeTest.Results[i] {
@@ -201,17 +188,35 @@ func drawBoundedText(s tcell.Screen, x1, y1, x2, y2 int, style tcell.Style, type
       s.SetContent(col, row, r, nil, style.Foreground(tcell.ColorRed))
     }
 
+    if i == typeTest.CurPos {
+      s.ShowCursor(col, row)
+    }
+
 		col++
-		if col >= x2 {
+    // - if cur column about to cross the right border (x2) == break
+    // - if currently on whitespace and the distance to next whitespece > distance to x2 == break
+		if col >= x2 || 
+      (r == ' ' && col + distanceToNextWhitespace(i, textAsRunes) >= x2) {
 			row++
 			col = x1
 		}
+
 		if row > y2 {
 			break
 		}
 	}
 }
 
+func distanceToNextWhitespace(curPos int, textAsRunes []rune) int {
+  res := 0
+  for i, r := range textAsRunes[curPos + 1:] {
+    if r == ' ' {
+      res = i + 1
+      break
+    }
+  }
+  return res
+}
 
 func drawText(s tcell.Screen, x, y int, style tcell.Style, text string) {
 	row := y
