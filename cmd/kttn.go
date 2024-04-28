@@ -86,11 +86,7 @@ func main() {
 	}
 	defer quit()
 
-  typeTest := TypingTest{
-    Text: DEFAULT_TEXT,
-    CurPos: 0,
-    Results: make([]bool, utf8.RuneCountInString(DEFAULT_TEXT)),
-  } 
+  typeTest := createNewTest()
 
 	for {
     // Update screen
@@ -104,10 +100,14 @@ func main() {
 		case *tcell.EventResize:
       s.Clear()
       updateLogo(s, defStyle)
+      showLegend(s, defStyle)
       updateTypingBox(s, defStyle, typeTest)
 			s.Sync()
 		case *tcell.EventKey:
-			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
+			if ev.Key() == tcell.KeyEscape  {
+        typeTest = createNewTest()
+        updateTypingBox(s, defStyle, typeTest)
+      } else if ev.Key() == tcell.KeyCtrlW || ev.Key() == tcell.KeyCtrlQ {
 				return
 			} else if ev.Key() == tcell.KeyBackspace || ev.Key() == tcell.KeyBackspace2 {
         typeTest.UpdateWithBackspace(ev.Key())
@@ -122,7 +122,13 @@ func main() {
 	}
 }
 
-
+func createNewTest() TypingTest {
+  return TypingTest{
+    Text: DEFAULT_TEXT,
+    CurPos: 0,
+    Results: make([]bool, utf8.RuneCountInString(DEFAULT_TEXT)),
+  } 
+}
 func getMidScreenCoords(screen tcell.Screen) (midX int, midY int) {
   availX, availY := screen.Size()
   return availX/2, availY/2
@@ -175,15 +181,21 @@ func getLogoWithParams(eyes, tail string) string {
   return strings.Replace(r, TAIL_BEHIND, tail, 1)
 }
 
+func showLegend(screen tcell.Screen, style tcell.Style) {
+  midX, _ := getMidScreenCoords(screen)
+  _, maxY := screen.Size()
+  drawText(screen, midX - 20, maxY - 1, style, "C-q or C-w to quit | Esc to restart the test")
+}
+
 func drawBoundedText(s tcell.Screen, x1, y1, x2, y2 int, style tcell.Style, typeTest TypingTest) {
 	row := y1
 	col := x1
   textAsRunes := []rune(typeTest.Text)
 	for i, r := range textAsRunes {
     if i >= typeTest.CurPos {
-      s.SetContent(col, row, r, nil, style)
+      s.SetContent(col, row, r, nil, style.Foreground(tcell.ColorGray))
     }else if typeTest.Results[i] {
-      s.SetContent(col, row, r, nil, style.Foreground(tcell.ColorGreen))
+      s.SetContent(col, row, r, nil, style)
     }else {
       s.SetContent(col, row, r, nil, style.Foreground(tcell.ColorRed))
     }
