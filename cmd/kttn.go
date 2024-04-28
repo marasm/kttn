@@ -30,6 +30,32 @@ const TAIL_RIGHT_UP string = "   (_|_)__/"
 const DEFAULT_TEXT string = 
   `This is just the default text for example and testing purposes. There is not point to this other than that. This is all just a very long string with no line breaks to illustrate some challenges with presenting it in a box and reflowing it when the window is resized.`
 
+type Cat struct {
+  CurEyes string
+  CurTail string
+}
+
+type TypingTest struct {
+  Text string
+  Results []bool 
+  CurPos int
+}
+
+func (t *TypingTest) UpdateWithRegKey(key rune) {
+  // - see if the key == the current rune in text
+  // - append the results with true|false
+  t.Results[t.CurPos] = []rune(t.Text)[t.CurPos] == key
+  if t.CurPos < utf8.RuneCountInString(t.Text) - 1 {
+    t.CurPos++
+  }
+}
+
+func (t *TypingTest) UpdateWithBackspace(key tcell.Key) {
+  if t.CurPos > 0 {
+    t.CurPos--
+  }
+}
+  
 func main() {
 	s, err := tcell.NewScreen()
 	if err != nil {
@@ -42,6 +68,7 @@ func main() {
 	// Set default text style
 	defStyle := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)
 	s.SetStyle(defStyle)
+  s.SetCursorStyle(tcell.CursorStyleBlinkingBlock)
 
 	// Clear screen
 	s.Clear()
@@ -59,7 +86,11 @@ func main() {
 	}
 	defer quit()
 
-  cursorPos := 0
+  typeTest := TypingTest{
+    Text: DEFAULT_TEXT,
+    CurPos: 0,
+    Results: make([]bool, utf8.RuneCountInString(DEFAULT_TEXT)),
+  } 
 
 	for {
     // Update screen
@@ -73,21 +104,22 @@ func main() {
 		case *tcell.EventResize:
       s.Clear()
       updateLogo(s, defStyle)
-      updateTypingBox(s, defStyle, DEFAULT_TEXT)
-      updateCursor(s, DEFAULT_TEXT, cursorPos)
+      updateTypingBox(s, defStyle, typeTest)
+      updateCursor(s, typeTest)
 			s.Sync()
 		case *tcell.EventKey:
 			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
 				return
 			} else if ev.Key() == tcell.KeyBackspace || ev.Key() == tcell.KeyBackspace2 {
-        cursorPos--
-        updateCursor(s, DEFAULT_TEXT, cursorPos)
+        typeTest.UpdateWithBackspace(ev.Key())
+        updateTypingBox(s, defStyle, typeTest)
+        updateCursor(s, typeTest)
 			} else {
-        //TODO once text len == cursor pos stop the increment and show results
-        cursorPos++
+        //TODO once text len == cursor show results
+        typeTest.UpdateWithRegKey(ev.Rune())
         updateLogo(s, defStyle)
-        updateTypingBox(s, defStyle, DEFAULT_TEXT)
-        updateCursor(s, DEFAULT_TEXT, cursorPos)
+        updateTypingBox(s, defStyle, typeTest)
+        updateCursor(s, typeTest)
       }
 		}
 	}
@@ -117,16 +149,15 @@ func getTypingBoxCoords(screen tcell.Screen, text string) (startX, startY, endX,
   return 5, midY - int(math.Round(numOfRows/2 + 0.5)) + offset, maxX - 5, midY + int(math.Round(numOfRows/2 + 0.5)) + offset
 }
 
-func updateCursor(screen tcell.Screen, text string, cursorPos int) {
-  sx, sy, ex, _ := getTypingBoxCoords(screen, text)
-  screen.SetCursorStyle(tcell.CursorStyleBlinkingBlock)
+func updateCursor(screen tcell.Screen, typeTest TypingTest) {
+  sx, sy, ex, _ := getTypingBoxCoords(screen, typeTest.Text)
   lineLen := ex - sx - 1 
-  yOffset := cursorPos/lineLen + 1
+  yOffset := typeTest.CurPos/lineLen + 1
   xOffset := 0 
-  if cursorPos >= lineLen {
-    xOffset = lineLen * (cursorPos/lineLen) 
+  if typeTest.CurPos >= lineLen {
+    xOffset = lineLen * (typeTest.CurPos/lineLen) 
   }
-  screen.ShowCursor(sx + 1 + cursorPos - xOffset, sy + yOffset)
+  screen.ShowCursor(sx + 1 + typeTest.CurPos - xOffset, sy + yOffset)
 }
 
 func updateLogo(screen tcell.Screen, style tcell.Style) {
@@ -147,9 +178,10 @@ func updateLogo(screen tcell.Screen, style tcell.Style) {
   }
 }
 
-func updateTypingBox(screen tcell.Screen, style tcell.Style, text string) {
-  sx, sy, ex,ey := getTypingBoxCoords(screen, text) 
-  drawBox(screen, sx, sy, ex, ey, style, text)
+func updateTypingBox(screen tcell.Screen, style tcell.Style, typeTest TypingTest) {
+  sx, sy, ex,ey := getTypingBoxCoords(screen, typeTest.Text) 
+  drawBox(screen, sx, sy, ex, ey, style)
+	drawBoundedText(screen, sx+1, sy+1, ex, ey-1, style, typeTest)
 }
 
 func getLogoWithParams(eyes, tail string) string {
@@ -157,11 +189,18 @@ func getLogoWithParams(eyes, tail string) string {
   return strings.Replace(r, TAIL_BEHIND, tail, 1)
 }
 
-func drawBoundedText(s tcell.Screen, x1, y1, x2, y2 int, style tcell.Style, text string) {
+func drawBoundedText(s tcell.Screen, x1, y1, x2, y2 int, style tcell.Style, typeTest TypingTest) {
 	row := y1
 	col := x1
-	for _, r := range []rune(text) {
-		s.SetContent(col, row, r, nil, style)
+	for i, r := range []rune(typeTest.Text) {
+    if i >= typeTest.CurPos {
+      s.SetContent(col, row, r, nil, style)
+    }else if typeTest.Results[i] {
+      s.SetContent(col, row, r, nil, style.Foreground(tcell.ColorGreen))
+    }else {
+      s.SetContent(col, row, r, nil, style.Foreground(tcell.ColorRed))
+    }
+
 		col++
 		if col >= x2 {
 			row++
@@ -172,6 +211,7 @@ func drawBoundedText(s tcell.Screen, x1, y1, x2, y2 int, style tcell.Style, text
 		}
 	}
 }
+
 
 func drawText(s tcell.Screen, x, y int, style tcell.Style, text string) {
 	row := y
@@ -187,7 +227,7 @@ func drawText(s tcell.Screen, x, y int, style tcell.Style, text string) {
   }
 }
 
-func drawBox(s tcell.Screen, x1, y1, x2, y2 int, style tcell.Style, text string) {
+func drawBox(s tcell.Screen, x1, y1, x2, y2 int, style tcell.Style) {
 	if y2 < y1 {
 		y1, y2 = y2, y1
 	}
@@ -213,6 +253,5 @@ func drawBox(s tcell.Screen, x1, y1, x2, y2 int, style tcell.Style, text string)
 		s.SetContent(x2, y2, '╯', nil, style)
 	}
 
-	drawBoundedText(s, x1+1, y1+1, x2, y2-1, style, text)
 }
 
