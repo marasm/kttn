@@ -137,13 +137,13 @@ func getTypingBoxCoords(screen tcell.Screen, text string) (startX, startY, endX,
   maxX, _ := screen.Size()
   _, midY := getMidScreenCoords(screen) 
   txtLength := utf8.RuneCountInString(text)
-  //add .5 to always round up
-  numOfRows := math.Round(float64(txtLength)/float64(maxX-12) + 0.5)  
+  //add .75 to always round up and to account for word wrapping line breaks
+  numOfRows := math.Round(float64(txtLength)/float64(maxX-12) + 0.75)  
   offset := 0
   if numOfRows > 6 {
     offset = int(numOfRows) - 6
   }
-  return 5, midY - int(math.Round(numOfRows/2 + 0.5)) + offset, maxX - 5, midY + int(math.Round(numOfRows/2 + 0.5)) + offset
+  return 5, midY - int(math.Round(numOfRows/2 + 0.75)) + offset, maxX - 5, midY + int(math.Round(numOfRows/2 + 0.75)) + offset
 }
 
 func updateLogo(screen tcell.Screen, style tcell.Style) {
