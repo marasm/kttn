@@ -5,6 +5,7 @@ import (
 	"math/rand/v2"
   "math"
 	"strings"
+  "time"
   "unicode/utf8"
 
 	"github.com/gdamore/tcell/v2"
@@ -29,6 +30,7 @@ const TAIL_RIGHT_UP string = "   (_|_)__/"
 
 const DEFAULT_TEXT string = 
   `This is just the default text for example and testing purposes. There is not point to this other than that. This is all just a very long string with no line breaks to illustrate some challenges with presenting it in a box and reflowing it when the window is resized.`
+const SHORT_TEXT string = "Hello"
 
 type Cat struct {
   CurEyes string
@@ -39,14 +41,26 @@ type TypingTest struct {
   Text string
   Results []bool 
   CurPos int
+  StartTime time.Time
+  EndTime time.Time
+}
+
+func (t TypingTest) TestComplete() bool {
+  return t.CurPos >= t.getTotalChars() - 1  
 }
 
 func (t *TypingTest) UpdateWithRegKey(key rune) {
   // - see if the key == the current rune in text
   // - append the results with true|false
   t.Results[t.CurPos] = []rune(t.Text)[t.CurPos] == key
-  if t.CurPos < utf8.RuneCountInString(t.Text) - 1 {
+  if !t.TestComplete() {
     t.CurPos++
+  }
+  if t.StartTime.IsZero()  && t.CurPos > 0 {
+    t.StartTime = time.Now()
+  }
+  if t.EndTime.IsZero()  && t.TestComplete() {
+    t.EndTime = time.Now()
   }
 }
 
@@ -54,6 +68,30 @@ func (t *TypingTest) UpdateWithBackspace(key tcell.Key) {
   if t.CurPos > 0 {
     t.CurPos--
   }
+}
+
+func (t TypingTest) getErrorCount() int {
+  c := 0 
+  for _, r := range t.Results[:t.CurPos + 1] {
+    if !r {
+      c++
+    }
+  }
+  return c
+}
+
+func (t TypingTest) getTotalChars() int {
+  return utf8.RuneCountInString(t.Text)
+}
+
+func (t TypingTest) getWordCount() int {
+  return len(strings.Split(t.Text, " "))
+}
+
+func (t TypingTest) getAccuracyPercent() float32 {
+  total := t.getTotalChars() 
+  success := total - t.getErrorCount()
+  return float32(success)/float32(total)*100
 }
   
 func main() {
@@ -106,6 +144,9 @@ func main() {
 		case *tcell.EventKey:
 			if ev.Key() == tcell.KeyEscape  {
         typeTest = createNewTest()
+        s.Clear()
+        updateLogo(s, defStyle)
+        showLegend(s, defStyle)
         updateTypingBox(s, defStyle, typeTest)
       } else if ev.Key() == tcell.KeyCtrlW || ev.Key() == tcell.KeyCtrlQ {
 				return
@@ -113,10 +154,16 @@ func main() {
         typeTest.UpdateWithBackspace(ev.Key())
         updateTypingBox(s, defStyle, typeTest)
 			} else {
-        //TODO once text len == cursor show results
-        typeTest.UpdateWithRegKey(ev.Rune())
-        updateLogo(s, defStyle)
-        updateTypingBox(s, defStyle, typeTest)
+        if typeTest.TestComplete() {
+          typeTest.UpdateWithRegKey(ev.Rune())
+          s.Clear()
+          updateLogo(s, defStyle)
+          showResults(s, defStyle, typeTest)
+        } else {
+          typeTest.UpdateWithRegKey(ev.Rune())
+          updateLogo(s, defStyle)
+          updateTypingBox(s, defStyle, typeTest)
+        }
       }
 		}
 	}
@@ -129,6 +176,7 @@ func createNewTest() TypingTest {
     Results: make([]bool, utf8.RuneCountInString(DEFAULT_TEXT)),
   } 
 }
+
 func getMidScreenCoords(screen tcell.Screen) (midX int, midY int) {
   availX, availY := screen.Size()
   return availX/2, availY/2
@@ -185,6 +233,24 @@ func showLegend(screen tcell.Screen, style tcell.Style) {
   midX, _ := getMidScreenCoords(screen)
   _, maxY := screen.Size()
   drawText(screen, midX - 20, maxY - 1, style, "C-q or C-w to quit | Esc to restart the test")
+}
+
+func showResults(screen tcell.Screen, style tcell.Style, typeTest TypingTest) {
+  screen.HideCursor()  
+  midX, midY := getMidScreenCoords(screen)
+  cpm := float64(typeTest.getTotalChars())/typeTest.EndTime.Sub(typeTest.StartTime).Minutes()
+  wpm := float64(typeTest.getWordCount())/typeTest.EndTime.Sub(typeTest.StartTime).Minutes()
+  total := typeTest.getTotalChars()
+  errors := typeTest.getErrorCount()
+  accuracy := typeTest.getAccuracyPercent()
+  resultsStr := fmt.Sprintf(`
+         WPM : %.2f
+         CPM : %.2f
+ Total Typed : %d
+      Errors : %d
+    Accuracy : %.2f%%`, 
+    wpm, cpm, total, errors, accuracy)
+  drawText(screen, midX - 14, midY - 2, style, resultsStr)
 }
 
 func drawBoundedText(s tcell.Screen, x1, y1, x2, y2 int, style tcell.Style, typeTest TypingTest) {
