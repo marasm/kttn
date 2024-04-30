@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"math/rand/v2"
-  "math"
 	"strings"
-  "time"
-  "unicode/utf8"
+	"unicode/utf8"
 
 	"github.com/gdamore/tcell/v2"
+	tt "github.com/marasm/kttn/internal/pkg/typingTest"
 )
 
 const LOGO string = `
@@ -37,63 +37,6 @@ type Cat struct {
   CurTail string
 }
 
-type TypingTest struct {
-  Text string
-  Results []bool 
-  CurPos int
-  StartTime time.Time
-  EndTime time.Time
-}
-
-func (t TypingTest) TestComplete() bool {
-  return t.CurPos >= t.getTotalChars() - 1  
-}
-
-func (t *TypingTest) UpdateWithRegKey(key rune) {
-  // - see if the key == the current rune in text
-  // - append the results with true|false
-  t.Results[t.CurPos] = []rune(t.Text)[t.CurPos] == key
-  if !t.TestComplete() {
-    t.CurPos++
-  }
-  if t.StartTime.IsZero()  && t.CurPos > 0 {
-    t.StartTime = time.Now()
-  }
-  if t.EndTime.IsZero()  && t.TestComplete() {
-    t.EndTime = time.Now()
-  }
-}
-
-func (t *TypingTest) UpdateWithBackspace(key tcell.Key) {
-  if t.CurPos > 0 {
-    t.CurPos--
-  }
-}
-
-func (t TypingTest) getErrorCount() int {
-  c := 0 
-  for _, r := range t.Results[:t.CurPos + 1] {
-    if !r {
-      c++
-    }
-  }
-  return c
-}
-
-func (t TypingTest) getTotalChars() int {
-  return utf8.RuneCountInString(t.Text)
-}
-
-func (t TypingTest) getWordCount() int {
-  return len(strings.Split(t.Text, " "))
-}
-
-func (t TypingTest) getAccuracyPercent() float32 {
-  total := t.getTotalChars() 
-  success := total - t.getErrorCount()
-  return float32(success)/float32(total)*100
-}
-  
 func main() {
 	s, err := tcell.NewScreen()
 	if err != nil {
@@ -169,8 +112,8 @@ func main() {
 	}
 }
 
-func createNewTest() TypingTest {
-  return TypingTest{
+func createNewTest() tt.TypingTest {
+  return tt.TypingTest{
     Text: DEFAULT_TEXT,
     CurPos: 0,
     Results: make([]bool, utf8.RuneCountInString(DEFAULT_TEXT)),
@@ -218,7 +161,7 @@ func updateLogo(screen tcell.Screen, style tcell.Style) {
   }
 }
 
-func updateTypingBox(screen tcell.Screen, style tcell.Style, typeTest TypingTest) {
+func updateTypingBox(screen tcell.Screen, style tcell.Style, typeTest tt.TypingTest) {
   sx, sy, ex,ey := getTypingBoxCoords(screen, typeTest.Text) 
   drawBox(screen, sx, sy, ex, ey, style)
 	drawBoundedText(screen, sx+1, sy+1, ex, ey-1, style, typeTest)
@@ -235,14 +178,14 @@ func showLegend(screen tcell.Screen, style tcell.Style) {
   drawText(screen, midX - 20, maxY - 1, style, "C-q or C-w to quit | Esc to restart the test")
 }
 
-func showResults(screen tcell.Screen, style tcell.Style, typeTest TypingTest) {
+func showResults(screen tcell.Screen, style tcell.Style, typeTest tt.TypingTest) {
   screen.HideCursor()  
   midX, midY := getMidScreenCoords(screen)
-  cpm := float64(typeTest.getTotalChars())/typeTest.EndTime.Sub(typeTest.StartTime).Minutes()
-  wpm := float64(typeTest.getWordCount())/typeTest.EndTime.Sub(typeTest.StartTime).Minutes()
-  total := typeTest.getTotalChars()
-  errors := typeTest.getErrorCount()
-  accuracy := typeTest.getAccuracyPercent()
+  cpm := float64(typeTest.GetTotalChars())/typeTest.EndTime.Sub(typeTest.StartTime).Minutes()
+  wpm := float64(typeTest.GetWordCount())/typeTest.EndTime.Sub(typeTest.StartTime).Minutes()
+  total := typeTest.GetTotalChars()
+  errors := typeTest.GetErrorCount()
+  accuracy := typeTest.GetAccuracyPercent()
   resultsStr := fmt.Sprintf(`
          WPM : %.2f
          CPM : %.2f
@@ -253,7 +196,7 @@ func showResults(screen tcell.Screen, style tcell.Style, typeTest TypingTest) {
   drawText(screen, midX - 14, midY - 2, style, resultsStr)
 }
 
-func drawBoundedText(s tcell.Screen, x1, y1, x2, y2 int, style tcell.Style, typeTest TypingTest) {
+func drawBoundedText(s tcell.Screen, x1, y1, x2, y2 int, style tcell.Style, typeTest tt.TypingTest) {
 	row := y1
 	col := x1
   textAsRunes := []rune(typeTest.Text)
