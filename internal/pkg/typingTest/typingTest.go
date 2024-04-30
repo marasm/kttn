@@ -8,12 +8,24 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+const DEFAULT_TEXT string = 
+  `This is just the default text for example and testing purposes. There is not point to this other than that. This is all just a very long string with no line breaks to illustrate some challenges with presenting it in a box and reflowing it when the window is resized.`
+const SHORT_TEXT string = "Hello"
+
 type TypingTest struct {
   Text string
   Results []bool 
   CurPos int
   StartTime time.Time
   EndTime time.Time
+}
+
+func CreateNewTest() TypingTest {
+  return TypingTest{
+    Text: DEFAULT_TEXT,
+    CurPos: 0,
+    Results: make([]bool, utf8.RuneCountInString(DEFAULT_TEXT)),
+  } 
 }
 
 func (t TypingTest) TestComplete() bool {
