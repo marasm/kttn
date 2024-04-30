@@ -33,6 +33,24 @@ func GetTypingBoxCoords(screen tcell.Screen, text string) (startX, startY, endX,
   return 5, midY - int(math.Round(numOfRows/2 + 0.75)) + offset, maxX - 5, midY + int(math.Round(numOfRows/2 + 0.75)) + offset
 }
 
+func UpdateTypingBox(screen tcell.Screen, style tcell.Style, typeTest tt.TypingTest) {
+  sx, sy, ex,ey := GetTypingBoxCoords(screen, typeTest.Text) 
+  DrawBox(screen, sx, sy, ex, ey, style)
+	DrawBoundedText(screen, sx+1, sy+1, ex, ey-1, style, typeTest)
+}
+
+func DrawLegend(screen tcell.Screen, style tcell.Style) {
+  midX, _ := GetMidScreenCoords(screen)
+  _, maxY := screen.Size()
+  DrawText(screen, midX - 20, maxY - 1, style, "C-q or C-w to quit | Esc to restart the test")
+}
+
+func DrawResults(screen tcell.Screen, style tcell.Style, typeTest tt.TypingTest) {
+  screen.HideCursor()  
+  midX, midY := GetMidScreenCoords(screen)
+  DrawText(screen, midX - 14, midY - 2, style, typeTest.GetResultsAsString())
+}
+
 func DrawText(s tcell.Screen, x, y int, style tcell.Style, text string) {
 	row := y
 	col := x

@@ -1,9 +1,10 @@
 package typingTest
 
 import (
+	"fmt"
 	"strings"
-  "time"
-  "unicode/utf8"
+	"time"
+	"unicode/utf8"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -75,5 +76,20 @@ func (t TypingTest) GetAccuracyPercent() float32 {
   total := t.GetTotalChars() 
   success := total - t.GetErrorCount()
   return float32(success)/float32(total)*100
+}
+
+func (t TypingTest) GetResultsAsString() string {
+  cpm := float64(t.GetTotalChars())/t.EndTime.Sub(t.StartTime).Minutes()
+  wpm := float64(t.GetWordCount())/t.EndTime.Sub(t.StartTime).Minutes()
+  total := t.GetTotalChars()
+  errors := t.GetErrorCount()
+  accuracy := t.GetAccuracyPercent()
+  return fmt.Sprintf(`
+         WPM : %.2f
+         CPM : %.2f
+ Total Typed : %d
+      Errors : %d
+    Accuracy : %.2f%%`, 
+    wpm, cpm, total, errors, accuracy)
 }
 
