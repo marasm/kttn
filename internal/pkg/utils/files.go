@@ -1,14 +1,15 @@
 package utils
 
 import (
-  "os"
-  "strings"
-  "bufio"
+	"bufio"
+	"os"
+	"strings"
 )
 
 
 func GetWordsFromFile(numOfWords int, fileName string) string {
-  file, err := os.Open("words/" + fileName)
+  cwd, _ := os.Getwd() 
+  file, err := os.Open(cwd + "/words/" + fileName)
   if err != nil {
     println("Error opening file" + err.Error())
   }
