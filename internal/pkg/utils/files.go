@@ -4,12 +4,13 @@ import (
 	"bufio"
 	"os"
 	"strings"
+
+  _ "github.com/marasm/kttn/internal/pkg/init"
 )
 
 
 func GetWordsFromFile(numOfWords int, fileName string) string {
-  cwd, _ := os.Getwd() 
-  file, err := os.Open(cwd + "/words/" + fileName)
+  file, err := os.Open("words/" + fileName)
   if err != nil {
     println("Error opening file" + err.Error())
   }
@@ -21,6 +22,10 @@ func GetWordsFromFile(numOfWords int, fileName string) string {
     success := scanner.Scan()
     if success == false {
       break
+    }
+    //add a space between words
+    if i > 0 {
+      res.WriteString(" ")
     }
     res.WriteString(scanner.Text())
   }

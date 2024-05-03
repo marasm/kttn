@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/marasm/kttn/internal/pkg/utils"
+	scr "github.com/marasm/kttn/internal/pkg/screen"
 )
 
 const LOGO string = `
@@ -32,19 +32,19 @@ type Cat struct {
 }
 
 func UpdateLogo(screen tcell.Screen, style tcell.Style) {
-  x, y := utils.GetLogoCoords(screen)
+  x, y := scr.GetLogoCoords(screen)
   n := rand.IntN(5)
   switch n {
     case 0:
-      utils.DrawText(screen, x, y, style, LOGO)
+      scr.DrawText(screen, x, y, style, LOGO)
     case 1:
-      utils.DrawText(screen, x, y, style, GetLogoWithParams(WATCHING_EYE, TAIL_RIGHT_FLAT))
+      scr.DrawText(screen, x, y, style, GetLogoWithParams(WATCHING_EYE, TAIL_RIGHT_FLAT))
     case 2:
-      utils.DrawText(screen, x, y, style, GetLogoWithParams(HAPPY_EYE, TAIL_LEFT_FLAT))
+      scr.DrawText(screen, x, y, style, GetLogoWithParams(HAPPY_EYE, TAIL_LEFT_FLAT))
     case 3:
-      utils.DrawText(screen, x, y, style, GetLogoWithParams(SURPRISED_EYE, TAIL_RIGHT_UP))
+      scr.DrawText(screen, x, y, style, GetLogoWithParams(SURPRISED_EYE, TAIL_RIGHT_UP))
     case 4:
-      utils.DrawText(screen, x, y, style, GetLogoWithParams(SLEEPY_EYE, TAIL_LEFT_UP))
+      scr.DrawText(screen, x, y, style, GetLogoWithParams(SLEEPY_EYE, TAIL_LEFT_UP))
     
   }
 }

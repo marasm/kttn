@@ -1,4 +1,4 @@
-package utils
+package screen
 
 import (
 	"math"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	tt "github.com/marasm/kttn/internal/pkg/typingTest"
+	"github.com/marasm/kttn/internal/pkg/utils"
 ) 
 
 
@@ -114,7 +115,7 @@ func DrawBoundedText(s tcell.Screen, x1, y1, x2, y2 int, style tcell.Style, type
     // - if cur column about to cross the right border (x2) == break
     // - if currently on whitespace and the distance to next whitespece > distance to x2 == break
 		if col >= x2 || 
-      (r == ' ' && col + DistanceToNextWhitespace(i, textAsRunes) >= x2) {
+      (r == ' ' && col + utils.DistanceToNextWhitespace(i, textAsRunes) >= x2) {
 			row++
 			col = x1
 		}

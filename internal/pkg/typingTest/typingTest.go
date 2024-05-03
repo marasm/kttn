@@ -7,6 +7,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/marasm/kttn/internal/pkg/utils"
 )
 
 const DEFAULT_TEXT string = 
@@ -22,10 +23,11 @@ type TypingTest struct {
 }
 
 func CreateNewTest() TypingTest {
+  text := utils.GetWordsFromFile(25, "en_500")
   return TypingTest{
-    Text: DEFAULT_TEXT,
+    Text: text,
     CurPos: 0,
-    Results: make([]bool, utf8.RuneCountInString(DEFAULT_TEXT)),
+    Results: make([]bool, utf8.RuneCountInString(text)),
   } 
 }
 

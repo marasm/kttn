@@ -6,8 +6,8 @@ import (
 	"github.com/gdamore/tcell/v2"
 
 	tt "github.com/marasm/kttn/internal/pkg/typingTest"
-	utils "github.com/marasm/kttn/internal/pkg/utils"
 	logo "github.com/marasm/kttn/internal/pkg/logo"
+	scr "github.com/marasm/kttn/internal/pkg/screen"
 )
 
 
@@ -55,31 +55,31 @@ func main() {
 		case *tcell.EventResize:
       s.Clear()
       logo.UpdateLogo(s, defStyle)
-      utils.DrawLegend(s, defStyle)
-      utils.UpdateTypingBox(s, defStyle, typeTest)
+      scr.DrawLegend(s, defStyle)
+      scr.UpdateTypingBox(s, defStyle, typeTest)
 			s.Sync()
 		case *tcell.EventKey:
 			if ev.Key() == tcell.KeyEscape  {
         typeTest = tt.CreateNewTest()
         s.Clear()
         logo.UpdateLogo(s, defStyle)
-        utils.DrawLegend(s, defStyle)
-        utils.UpdateTypingBox(s, defStyle, typeTest)
+        scr.DrawLegend(s, defStyle)
+        scr.UpdateTypingBox(s, defStyle, typeTest)
       } else if ev.Key() == tcell.KeyCtrlW || ev.Key() == tcell.KeyCtrlQ {
 				return
 			} else if ev.Key() == tcell.KeyBackspace || ev.Key() == tcell.KeyBackspace2 {
         typeTest.UpdateWithBackspace(ev.Key())
-        utils.UpdateTypingBox(s, defStyle, typeTest)
+        scr.UpdateTypingBox(s, defStyle, typeTest)
 			} else {
         if typeTest.TestComplete() {
           typeTest.UpdateWithRegKey(ev.Rune())
           s.Clear()
           logo.UpdateLogo(s, defStyle)
-          utils.DrawResults(s, defStyle, typeTest)
+          scr.DrawResults(s, defStyle, typeTest)
         } else {
           typeTest.UpdateWithRegKey(ev.Rune())
           logo.UpdateLogo(s, defStyle)
-          utils.UpdateTypingBox(s, defStyle, typeTest)
+          scr.UpdateTypingBox(s, defStyle, typeTest)
         }
       }
 		}
