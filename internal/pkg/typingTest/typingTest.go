@@ -23,7 +23,7 @@ type TypingTest struct {
 }
 
 func CreateNewTest() TypingTest {
-  text := utils.GetWordsFromFile(25, "en_500")
+  text := utils.GetWordsFromFile(50, "en_500")
   return TypingTest{
     Text: text,
     CurPos: 0,
