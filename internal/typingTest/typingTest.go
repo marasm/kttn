@@ -7,7 +7,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/marasm/kttn/internal/pkg/utils"
+	"github.com/marasm/kttn/internal/utils"
 )
 
 const DEFAULT_TEXT string = 

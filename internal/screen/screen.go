@@ -6,8 +6,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/gdamore/tcell/v2"
-	tt "github.com/marasm/kttn/internal/pkg/typingTest"
-	"github.com/marasm/kttn/internal/pkg/utils"
+	tt "github.com/marasm/kttn/internal/typingTest"
+	"github.com/marasm/kttn/internal/utils"
 ) 
 
 

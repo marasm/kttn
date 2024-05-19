@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	_ "github.com/marasm/kttn/internal/pkg/init"
+	_ "github.com/marasm/kttn/internal/init"
 )
 
 

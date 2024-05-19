@@ -5,9 +5,10 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 
-	tt "github.com/marasm/kttn/internal/pkg/typingTest"
-	logo "github.com/marasm/kttn/internal/pkg/logo"
-	scr "github.com/marasm/kttn/internal/pkg/screen"
+	tt "github.com/marasm/kttn/internal/typingTest"
+	logo "github.com/marasm/kttn/internal/logo"
+	scr "github.com/marasm/kttn/internal/screen"
+	config "github.com/marasm/kttn/internal/config"
 )
 
 
@@ -19,6 +20,8 @@ func main() {
 	if err := s.Init(); err != nil {
 		fmt.Printf("%+v", err)
 	}
+
+  config.InitConfig()
 
 	// Set default text style
 	defStyle := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)

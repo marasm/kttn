@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
-	scr "github.com/marasm/kttn/internal/pkg/screen"
+	scr "github.com/marasm/kttn/internal/screen"
 )
 
 const LOGO string = `
