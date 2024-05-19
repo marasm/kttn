@@ -10,9 +10,6 @@ import (
 	"github.com/marasm/kttn/internal/utils"
 )
 
-const DEFAULT_TEXT string = 
-  `This is just the default text for example and testing purposes. There is not point to this other than that. This is all just a very long string with no line breaks to illustrate some challenges with presenting it in a box and reflowing it when the window is resized.`
-const SHORT_TEXT string = "Hello"
 
 type TypingTest struct {
   Text string
@@ -22,8 +19,8 @@ type TypingTest struct {
   EndTime time.Time
 }
 
-func CreateNewTest() TypingTest {
-  text := utils.GetWordsFromFile(50, "en_500")
+func CreateNewTest(numOfWords int, wordSet string)  TypingTest {
+  text := utils.GetWordsFromFile(numOfWords, wordSet)
   return TypingTest{
     Text: text,
     CurPos: 0,

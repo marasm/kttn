@@ -5,10 +5,10 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 
-	tt "github.com/marasm/kttn/internal/typingTest"
+	config "github.com/marasm/kttn/internal/config"
 	logo "github.com/marasm/kttn/internal/logo"
 	scr "github.com/marasm/kttn/internal/screen"
-	config "github.com/marasm/kttn/internal/config"
+	tt "github.com/marasm/kttn/internal/typingTest"
 )
 
 
@@ -21,7 +21,7 @@ func main() {
 		fmt.Printf("%+v", err)
 	}
 
-  config.InitConfig()
+  conf := config.InitConfig()
 
 	// Set default text style
 	defStyle := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)
@@ -44,7 +44,7 @@ func main() {
 	}
 	defer quit()
 
-  typeTest := tt.CreateNewTest()
+  typeTest := tt.CreateNewTest(conf.NumberOfWords, conf.WordSet)
 
 	for {
     // Update screen
@@ -63,7 +63,7 @@ func main() {
 			s.Sync()
 		case *tcell.EventKey:
 			if ev.Key() == tcell.KeyEscape  {
-        typeTest = tt.CreateNewTest()
+        typeTest = tt.CreateNewTest(conf.NumberOfWords, conf.WordSet)
         s.Clear()
         logo.UpdateLogo(s, defStyle)
         scr.DrawLegend(s, defStyle)

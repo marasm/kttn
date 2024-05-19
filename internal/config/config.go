@@ -11,7 +11,14 @@ const configDir = "/.config/kttn/"
 const configFile = "config"
 const configFileType = "yaml"
 
-func InitConfig() {
+type Configuration struct {
+  WordSet string
+  NumberOfWords int
+  MaxWpm int
+  MaxCpm int
+}
+
+func InitConfig() *Configuration {
   // Find home directory.
   home, err := os.UserHomeDir()
   if err != nil {
@@ -40,6 +47,12 @@ func InitConfig() {
 	} else {
     fmt.Fprintln(os.Stderr, "Error reading existing config file. Will just use defaults.") 
   }
+
+  return &Configuration{
+    WordSet: viper.GetString("word_set"),
+    NumberOfWords: viper.GetInt("number_of_words"),
+    MaxWpm: viper.GetInt("max_wpm"),
+    MaxCpm: viper.GetInt("max_cpm")}
 }
 
 func createConfigDirIfNeeded(homeDir string) {
