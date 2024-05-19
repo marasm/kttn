@@ -18,7 +18,7 @@ func GetMidScreenCoords(screen tcell.Screen) (midX int, midY int) {
 
 func GetLogoCoords(screen tcell.Screen) (logoX, logoY int) {
   midX, midY := GetMidScreenCoords(screen)
-  return midX - 6, midY - 8 
+  return midX - 6, midY - 5 
 }
 
 func GetTypingBoxCoords(screen tcell.Screen, text string) (startX, startY, endX, endY int) {
@@ -26,12 +26,9 @@ func GetTypingBoxCoords(screen tcell.Screen, text string) (startX, startY, endX,
   _, midY := GetMidScreenCoords(screen) 
   txtLength := utf8.RuneCountInString(text)
   //add .75 to always round up and to account for word wrapping line breaks
-  numOfRows := math.Round(float64(txtLength)/float64(maxX-12) + 0.75)  
-  offset := 0
-  if numOfRows > 6 {
-    offset = int(numOfRows) - 6
-  }
-  return 5, midY - int(math.Round(numOfRows/2 + 0.75)) + offset, maxX - 5, midY + int(math.Round(numOfRows/2 + 0.75)) + offset
+  numOfRows := math.Round(float64(txtLength)/float64(maxX-12) + 1.75)  
+
+  return 5, midY, maxX - 5, midY + int(numOfRows) 
 }
 
 func UpdateTypingBox(screen tcell.Screen, style tcell.Style, typeTest tt.TypingTest) {
