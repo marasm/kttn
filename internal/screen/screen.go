@@ -46,7 +46,7 @@ func DrawLegend(screen tcell.Screen, style tcell.Style) {
 func DrawResults(screen tcell.Screen, style tcell.Style, typeTest tt.TypingTest) {
   screen.HideCursor()  
   midX, midY := GetMidScreenCoords(screen)
-  DrawText(screen, midX - 14, midY - 2, style, typeTest.GetResultsAsString())
+  DrawText(screen, midX - 14, midY, style, typeTest.GetResultsAsString())
 }
 
 func DrawText(s tcell.Screen, x, y int, style tcell.Style, text string) {
