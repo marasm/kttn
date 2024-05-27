@@ -77,9 +77,17 @@ func (t TypingTest) GetAccuracyPercent() float32 {
   return float32(success)/float32(total)*100
 }
 
+func (t TypingTest) GetCpm() float64 {
+  return float64(t.GetTotalChars())/t.EndTime.Sub(t.StartTime).Minutes()
+}
+
+func (t TypingTest) GetWpm() float64 {
+  return float64(t.GetWordCount())/t.EndTime.Sub(t.StartTime).Minutes()
+}
+
 func (t TypingTest) GetResultsAsString() string {
-  cpm := float64(t.GetTotalChars())/t.EndTime.Sub(t.StartTime).Minutes()
-  wpm := float64(t.GetWordCount())/t.EndTime.Sub(t.StartTime).Minutes()
+  cpm := t.GetCpm() 
+  wpm := t.GetWpm() 
   total := t.GetTotalChars()
   errors := t.GetErrorCount()
   accuracy := t.GetAccuracyPercent()

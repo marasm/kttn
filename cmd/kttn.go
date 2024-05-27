@@ -79,6 +79,13 @@ func main() {
           s.Clear()
           logo.UpdateLogo(s, defStyle)
           scr.DrawResults(s, defStyle, typeTest)
+          if typeTest.GetWpm() > conf.MaxWpm {
+            conf.MaxWpm = typeTest.GetWpm()
+          }
+          if typeTest.GetCpm() > conf.MaxCpm {
+            conf.MaxCpm = typeTest.GetCpm()
+          }
+          config.SaveConfig(conf)
         } else {
           typeTest.UpdateWithRegKey(ev.Rune())
           logo.UpdateLogo(s, defStyle)

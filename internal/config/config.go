@@ -14,8 +14,8 @@ const configFileType = "yaml"
 type Configuration struct {
   WordSet string
   NumberOfWords int
-  MaxWpm int
-  MaxCpm int
+  MaxWpm float64 
+  MaxCpm float64
 }
 
 func InitConfig() *Configuration {
@@ -27,8 +27,8 @@ func InitConfig() *Configuration {
 
   viper.SetDefault("word_set", "en_500")
   viper.SetDefault("number_of_words", 50)
-  viper.SetDefault("max_wmp", 0)
-  viper.SetDefault("max_cmp", 0)
+  viper.SetDefault("max_wpm", 0)
+  viper.SetDefault("max_cpm", 0)
   
   // Search config in home directory with name ". toolbox" (without extension).
   viper.AddConfigPath (home + configDir)
@@ -51,8 +51,17 @@ func InitConfig() *Configuration {
   return &Configuration{
     WordSet: viper.GetString("word_set"),
     NumberOfWords: viper.GetInt("number_of_words"),
-    MaxWpm: viper.GetInt("max_wpm"),
-    MaxCpm: viper.GetInt("max_cpm")}
+    MaxWpm: viper.GetFloat64("max_wpm"),
+    MaxCpm: viper.GetFloat64("max_cpm")}
+}
+
+func SaveConfig(config *Configuration){
+  viper.Set("word_set", config.WordSet)
+  viper.Set("number_of_words", config.NumberOfWords)
+  viper.Set("max_wpm", config.MaxWpm)
+  viper.Set("max_cpm", config.MaxCpm)
+  
+  viper.WriteConfig()
 }
 
 func createConfigDirIfNeeded(homeDir string) {
